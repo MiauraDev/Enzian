@@ -2,13 +2,13 @@
 Contributors: lastudioweb, choijun
 Tags: elementor addons, elementor extensions, header footer builder, widgets for elementor, elementor widgets
 Donate Link: https://paypal.me/dpv0990
-Requires at least: 5.0
-Tested up to: 6.6.1
-Stable tag: 1.4.1
+Requires at least: 6.0
+Tested up to: 6.7.2
+Stable tag: 1.4.9
 Requires PHP: 7.0
-WC tested up to: 9.3.3
-Elementor tested up to: 3.24.x
-Elementor Pro tested up to: 3.24.x
+WC tested up to: 9.7.2
+Elementor tested up to: 3.28.0
+Elementor Pro tested up to: 3.28.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -45,8 +45,30 @@ LA-Studio Kit is an ultimate All in one addons for Elementor Page Builder, it wi
 4. Add New Conditions
 
 
-
 == Changelog ==
+
+= 1.4.9 =
+* Compatible with Elementor 3.28.x
+
+= 1.4.8 =
+* Fix animation issue.
+
+= 1.4.7 =
+* Compatible with Elementor 3.27.x
+
+= 1.4.6 =
+* Compatible with Elementor 3.26.3
+
+= 1.4.4 =
+* Compatible with LaStudio Core
+
+= 1.4.3 =
+* Fixed security issue
+* Compatible with Elementor 3.26.x
+
+= 1.4.2 =
+* Fix motion & sticky issue
+* Fixed security issue
 
 = 1.4.1 =
 * Fix assets loading issue

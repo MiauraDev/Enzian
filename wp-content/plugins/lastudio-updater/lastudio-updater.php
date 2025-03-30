@@ -9,7 +9,7 @@
  * Plugin Name:       LA-Studio Updater
  * Plugin URI:        https://la-studioweb.com/plugins/lastudio-updater/
  * Description:       Automatic Update Theme & Plugins
- * Version:           1.0.1
+ * Version:           1.0.0
  * Requires at least: 5.0
  * Tested up to:      5.9
  * Requires PHP:      5.6
@@ -272,7 +272,7 @@ class Admin{
             'slug'              => $template_name,
             'purchase_code'     => get_option($purchase_code_key),
             'license_info'      => get_option($license_info_key),
-            'plugin_allow'      => apply_filters('Lakit_Updater/required_plugins', apply_filters('Lakit_Theme_Manager/required_plugins', [])),
+            'plugin_allow'      => apply_filters('Lakit_Updater/required_plugins', []),
             'key_purchase_code' => $purchase_code_key,
             'key_license_info'  => $license_info_key,
         ];
@@ -394,10 +394,6 @@ class Admin{
             }
             if(!empty($tmp2)){
                 $purchase_code_encoded = join('-', $tmp2);
-            }
-
-            if( $purchase_code_encoded == $purchase_code ) {
-                $purchase_code_encoded = str_repeat("*", strlen($purchase_code));
             }
         }
         $placeholder = 'Enter your purchase code';

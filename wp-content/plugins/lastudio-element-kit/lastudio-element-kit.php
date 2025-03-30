@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LA-Studio Element Kit for Elementor
  * Description:       Additional widgets for Elementor page builder. It has 60 highly customizable widgets
- * Version:           1.4.1
+ * Version:           1.4.9
  * Author:            LA-Studio
  * Author URI:        https://la-studioweb.com/
  * License:           GPL-2.0+
@@ -10,8 +10,8 @@
  * Text Domain:       lastudio-kit
  * Domain Path:       /languages
  *
- * Elementor tested up to: 3.24.x
- * Elementor Pro tested up to: 3.24.x
+ * Elementor tested up to: 3.28.x
+ * Elementor Pro tested up to: 3.28.x
  *
  * @package lastudio-kit
  * @author  LA-Studio
@@ -58,7 +58,7 @@ if(!class_exists('LaStudio_Kit')){
          *
          * @var string
          */
-        private $version = '1.4.1';
+        private $version = '1.4.9';
 
         /**
          * Framework component
@@ -368,10 +368,8 @@ if(!class_exists('LaStudio_Kit')){
             require_once $this->plugin_path( 'includes/rest-api/endpoints/plugin-settings.php' );
             require_once $this->plugin_path( 'includes/rest-api/endpoints/get-menu-items.php' );
 
-            if(!defined('LASTUDIO_VERSION')){
-                require_once $this->plugin_path( 'includes/integrations/override.php' );
-                require_once $this->plugin_path( 'includes/integrations/advance.php' );
-            }
+	        require_once $this->plugin_path( 'includes/integrations/override.php' );
+	        require_once $this->plugin_path( 'includes/integrations/advance.php' );
 
         }
 
@@ -516,6 +514,7 @@ if(!class_exists('LaStudio_Kit')){
         		'LaStudio_Kit_Ajax_Manager' => 'includes/modules/ajax/manager.php',
         		'LaStudioKitThemeBuilder_AdminApp' => 'includes/modules/admin-app/admin-app.php',
         		'Elementor\LaStudioKit_Base' => 'includes/base/class-widget-base.php',
+        		'Elementor\LaStudioKit_Base_Carousel_Trait' => 'includes/base/base-carousel-trait.php',
 	        ];
 
         	if( array_key_exists( $class, $mappings ) ){

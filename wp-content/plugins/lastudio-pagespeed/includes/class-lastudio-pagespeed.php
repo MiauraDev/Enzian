@@ -158,7 +158,7 @@ class LaStudio_Pagespeed {
 
 		$plugin_i18n = new LaStudio_Pagespeed_i18n();
 
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
+		$this->loader->add_action( 'init', $plugin_i18n, 'load_plugin_textdomain' );
 
 	}
 
@@ -256,7 +256,7 @@ class LaStudio_Pagespeed {
             add_action('swift_performance_buffer', [$this, 'swift_performance_rewrite'], PHP_INT_MAX);
         }
         else {
-            add_action('init', [$this, 'buffer_start'], -3);
+            add_action('init', [$this, 'buffer_start'], -10);
         }
     }
 
@@ -290,30 +290,40 @@ class LaStudio_Pagespeed {
 
 		$canRewrite = true;
 
+		/** don't run if is logged user */
+        if(is_user_logged_in()){
+            return false;
+        }
+
 		if(isset($_GET['nolastudiopagespeed'])){
-			return $canRewrite = false;
+			return false;
+		}
+		/**
+		 * Divi builder detected
+		 */
+		if (!empty($_GET['et_fb']) || ( isset($_GET['PageSpeed']) && $_GET['PageSpeed'] === 'off' )) {
+			return false;
 		}
 
 		if(defined('NITROPACK_VERSION')){
-			return $canRewrite = false;
+			return false;
 		}
 
-        if (defined('PHASTPRESS_VERSION')) {
-            $phastpress_settings = @json_decode(get_option('phastpress2-settings'), true);
-            if ($phastpress_settings && @$phastpress_settings['scripts-defer']) {
-                return $canRewrite = false;
-            }
-        }
+		if (defined('PHASTPRESS_VERSION')) {
+			$phastpress_settings = @json_decode(get_option('phastpress2-settings'), true);
+			if ($phastpress_settings && @$phastpress_settings['scripts-defer']) {
+				return false;
+			}
+		}
 
-        if (defined('WP_ROCKET_VERSION')) {
-            $wp_rocket_settings = get_option('wp_rocket_settings');
-            if (@$wp_rocket_settings['delay_js']) {
-                return $canRewrite = false;
-            }
-        }
+		if (defined('WP_ROCKET_VERSION')) {
+			$wp_rocket_settings = get_option('wp_rocket_settings');
+			if (@$wp_rocket_settings['delay_js']) {
+				return false;
+			}
+		}
 
-
-        $request = new LaStudio_Pagespeed_Is_Method();
+		$request = new LaStudio_Pagespeed_Is_Method();
 
 		if (!$request->is_frontend()) {
 			$canRewrite = false;
@@ -327,7 +337,7 @@ class LaStudio_Pagespeed {
 			$canRewrite = false;
 		}
 
-		if (class_exists('Elementor\Plugin') && (Elementor\Plugin::instance()->editor->is_edit_mode() || Elementor\Plugin::instance()->preview->is_preview_mode()) ) {
+		if (class_exists('Elementor\Plugin') && ( Elementor\Plugin::instance()->editor->is_edit_mode() || Elementor\Plugin::instance()->preview->is_preview_mode() || isset($_GET['render_mode']) ) ) {
 			$canRewrite = false;
 		}
 
@@ -339,21 +349,13 @@ class LaStudio_Pagespeed {
 			$canRewrite = false;
 		}
 
-		if (function_exists('et_core_is_builder_used_on_current_request') && et_core_is_builder_used_on_current_request()) {
+		if (class_exists('Fusion_App') && ($instance = \Fusion_App::get_instance()) && $instance->is_builder) {
 			$canRewrite = false;
 		}
 
-        if (class_exists('Fusion_App') && ($instance = \Fusion_App::get_instance()) && $instance->is_builder) {
-            $canRewrite = false;
-        }
-
 		if( isset($_GET['SuperSocializerAuth']) ){
-		    $canRewrite = false;
-        }
-
-//        if(is_user_logged_in()){
-//            $canRewrite = false;
-//        }
+			$canRewrite = false;
+		}
 
 		return apply_filters('LaStudio_Pagespeed/filter/check_can_rewrite', $canRewrite);
 
@@ -383,6 +385,11 @@ class LaStudio_Pagespeed {
 		if(!$this->check_can_rewrite()){
 			return $output;
 		}
+
+        if(false !== strpos( $output, '<?xml' )){
+            return $output;
+        }
+
 		$output = apply_filters('LaStudio_PageSpeed/filter/frontend_html_output', $output);
 		$output = preg_replace('/<\/html>/i', "</html>\n<!-- Optimized with LaStudio PageSpeed https://la-studioweb.com/ -->", $output);
 

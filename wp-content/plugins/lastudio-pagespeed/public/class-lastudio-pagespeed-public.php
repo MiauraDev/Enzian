@@ -101,7 +101,7 @@ class LaStudio_Pagespeed_Public {
 
 	public function get_default_attributes(){
 		$attributes = [];
-		$attributes[] = 'data-lastudiopagespeed-nooptimize="true"';
+		$attributes[] = 'data-no-optimize="1"';
         $atts = join(' ', $attributes);
         if(!empty($atts)){
             $atts = ' ' . $atts;
@@ -114,10 +114,6 @@ class LaStudio_Pagespeed_Public {
 		/* does not optimize script tag if server using cloudflare */
 		if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
 			$attributes[] = 'data-cfasync="false"';
-		}
-		/* does not optimize script if LightSpeedCache is enabled */
-		if (defined('LSCWP_V')) {
-			$attributes[] = 'data-no-optimize="true"';
 		}
 		$atts = join(' ', $attributes);
 		if(!empty($atts)){
@@ -135,7 +131,7 @@ class LaStudio_Pagespeed_Public {
 		$content = file_get_contents(plugin_dir_path( __FILE__ ) . 'js/lastudio-pagespeed-public.js');
 
 		$config = [
-			'delay' => 10000,
+			'delay' => 15000,
 			'version' => $this->version,
 			'nativelazyoad' => true,
 			'e_animation' => class_exists('Elementor\Plugin') ? true : false,
@@ -157,6 +153,7 @@ class LaStudio_Pagespeed_Public {
 	public function frontend_rewrite( $buffer ){
 
         preg_match('/<head.*\b>/', $buffer, $found_head_tag);
+
         if(empty($found_head_tag)){
             return $buffer;
         }
@@ -165,8 +162,6 @@ class LaStudio_Pagespeed_Public {
 
         $main_script = $this->get_primary_script_source();
         $buffer = preg_replace('/<\/body>/i', $main_script . '</body>', $buffer);
-//        $buffer = preg_replace('/<\/head>/i', $main_script . '</head>', $buffer);
-/*        $buffer = preg_replace('/(<head\b[^>]*?>)/', '${1}' . $this->get_primary_script_source(), $buffer);*/
         /* End including snippet */
 
         $REPLACEMENTS = [];
@@ -183,12 +178,12 @@ class LaStudio_Pagespeed_Public {
                 $hasSrc = preg_match('/\s+src=/i', $tag);
                 $hasType = preg_match('/\s+type=/i', $tag);
                 $shouldReplace = !$hasType || preg_match('/\s+type=([\'"])((application|text)\/(javascript|ecmascript|html|template)|module)\1/i', $tag);
-                $noOptimize = preg_match('/data-lastudiopagespeed-nooptimize="true"/i', $tag);
+                $noOptimize = preg_match('/data-no-optimize/i', $tag);
                 if ($shouldReplace && !$hasSrc && !$noOptimize) {
                     // inline script
                     $content = substr($buffer, $matches[0][1] + strlen($matches[0][0]), $endMatches[0][1] - $matches[0][1] - strlen($matches[0][0]));
                     if (apply_filters('LaStudio_Pagespeed/filter/exclude_js', false, $content)) {
-                        $replacement = preg_replace('/^<script\b/i', '<script data-lastudiopagespeed-nooptimize="true"', $everything);
+                        $replacement = preg_replace('/^<script\b/i', '<script data-no-optimize="1"', $everything);
                         $buffer = substr_replace($buffer, $replacement, $offset, $len);
                         continue;
                     }
@@ -207,7 +202,7 @@ class LaStudio_Pagespeed_Public {
 
             $result = $tag;
             if (!preg_match('/\s+data-src=/i', $result)
-                && !preg_match('/data-lastudiopagespeed-nooptimize="true"/i', $result)
+                && !preg_match('/(data-no-optimize="(true|yes|1)")/i', $result)
                 && !preg_match('/data-rocketlazyloadscript=/i', $result)) {
 
                 $src = preg_match('/\s+src=([\'"])(.*?)\1/i', $result, $matches)
@@ -232,22 +227,24 @@ class LaStudio_Pagespeed_Public {
 //                        $result = preg_replace('/\s+async\b/i', " data-async", $result);
                     }
                     if ($hasType) {
-                        $result = preg_replace('/\s+type=([\'"])module\1/i', " type=\"javascript/blocked\" data-lastudiopagespeed-module ", $result);
-                        $result = preg_replace('/\s+type=module\b/i', " type=\"javascript/blocked\" data-lastudiopagespeed-module ", $result);
+                        $result = preg_replace('/\s+type=([\'"])module\1/i', " type=\"javascript/blocked\" data-laps-module ", $result);
+                        $result = preg_replace('/\s+type=module\b/i', " type=\"javascript/blocked\" data-laps-module ", $result);
                         $result = preg_replace('/\s+type=([\'"])(application|text)\/(javascript|ecmascript)\1/i', " type=\"javascript/blocked\"", $result);
                         $result = preg_replace('/\s+type=(application|text)\/(javascript|ecmascript)\b/i', " type=\"javascript/blocked\"", $result);
                     } else {
                         $result = preg_replace('/<script/i', "<script type=\"javascript/blocked\"", $result);
                     }
-                    $result = preg_replace('/<script/i', "<script ${EXTRA}data-lastudiopagespeed-action=\"reorder\"", $result);
+                    $result = preg_replace('/<script/i', "<script {$EXTRA}data-laps-action=\"reorder\"", $result);
                 }
             }
-            return preg_replace('/\s*data-lastudiopagespeed-nooptimize="true"/i', '', $result);
+            return preg_replace('/\s*(data-no-optimize="(true|yes|1)")/i', '', $result);
         }, $buffer);
 
         $buffer = preg_replace_callback('/LASTUDIOPAGESPEED\[(\d+)\]LASTUDIOPAGESPEED/', function ($matches) use (&$REPLACEMENTS) {
             return $REPLACEMENTS[(int)$matches[1]];
         }, $buffer);
+
+        $buffer = str_replace('<html', '<html data-ps="yes"', $buffer);
 
         return $buffer;
     }

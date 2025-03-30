@@ -3,9 +3,9 @@ Contributors: la-studiowebdotcom
 Donate link: https://la-studioweb.com/
 Tags: pagespeed, optimize, performance, page, speed
 Requires at least: 5.0
-Tested up to: 5.6
-Stable tag: 5.6
-Requires PHP: 5.6
+Tested up to: 6.3
+Stable tag: 1.0.8
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

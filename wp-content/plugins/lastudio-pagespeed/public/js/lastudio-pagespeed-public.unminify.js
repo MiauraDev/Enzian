@@ -16,7 +16,7 @@ class LaStudioPageSpeedClass {
     }
 
     is_pagespeed() {
-        return (typeof navigator !== "undefined" && (/(lighthouse|gtmetrix)/i.test(navigator.userAgent.toLocaleLowerCase()) || /mozilla\/5\.0 \(x11; linux x86_64\)/i.test(navigator.userAgent.toLocaleLowerCase())));
+        return"undefined" != typeof navigator && /(lighthouse|gtmetrix)/i.test(navigator.userAgent.toLocaleLowerCase()) || navigator?.userAgentData?.brands?.filter(e=>"lighthouse" === e?.brand?.toLocaleLowerCase())?.length > 0 || window.innerWidth > 1340 && window.innerWidth < 1360 && window.devicePixelRatio <= 1 || window.innerWidth < 413 && window.innerWidth > 410 && "undefined" != typeof navigator && /moto/i.test(navigator.userAgent)
     }
 
     user_events_add(e) {
@@ -65,6 +65,7 @@ class LaStudioPageSpeedClass {
         this.add_html_class("lasf_ps-start_js");
         await this.load_scripts(this.enqueued_scripts.lazy);
         this.add_html_class("lasf_ps-js_loaded")
+        document.documentElement.removeAttribute('data-ps')
     }
 
     add_html_class(text) {
@@ -72,13 +73,13 @@ class LaStudioPageSpeedClass {
     }
 
     register_scripts() {
-        document.querySelectorAll("script[data-lastudiopagespeed-action=reorder]").forEach((e => {
+        document.querySelectorAll("script[data-laps-action=reorder]").forEach((e => {
             if(e.hasAttribute("src") || e.hasAttribute("data-src")){
                 if(e.hasAttribute("async") && false !== e.async){
                     this.enqueued_scripts.async.push(e)
                 }
                 else{
-                    if(e.hasAttribute("defer") && false !== e.defer || "module" === e.getAttribute("data-lastudiopagespeed-module")){
+                    if(e.hasAttribute("defer") && false !== e.defer || "module" === e.getAttribute("data-laps-module")){
                         this.enqueued_scripts.defer.push(e)
                     }
                     else{
@@ -90,7 +91,7 @@ class LaStudioPageSpeedClass {
                 this.enqueued_scripts.normal.push(e)
             }
         }))
-        document.querySelectorAll("script[data-lastudiopagespeed-action=lazyload_ext]").forEach((e => {
+        document.querySelectorAll("script[data-laps-action=lazyload_ext]").forEach((e => {
             this.enqueued_scripts.lazy.push(e)
         }))
     }
@@ -108,9 +109,9 @@ class LaStudioPageSpeedClass {
             [...e.attributes].forEach((e => {
                 let t = e.nodeName;
 
-                if("type" !== t && "data-lastudiopagespeed-action" !== t){
+                if("type" !== t && "data-laps-action" !== t){
                     r = e.nodeValue;
-                    if("data-lastudiopagespeed-module" === t){
+                    if("data-laps-module" === t){
                         t = "type";
                         r = "module";
                     }
@@ -239,16 +240,25 @@ class LaStudioPageSpeedClass {
                     const t = n.fn.on;
                     n.fn.on = n.fn.init.prototype.on = function () {
                         if (this[0] === window) {
+                            // console.log(arguments[0])
                             function e(e) {
                                 return e.split(" ").map((e => "load" === e || 0 === e.indexOf("load.") ? "lasf_ps-jquery_loaded" : e)).join(" ")
                             }
-
-                            "string" == typeof arguments[0] || arguments[0] instanceof String ? arguments[0] = e(arguments[0]) : "object" == typeof arguments[0] && Object.keys(arguments[0]).forEach((t => {
-                                delete Object.assign(arguments[0], {[e(t)]: arguments[0][t]})[t]
-                            }))
+                            if("string" == typeof arguments[0] || arguments[0] instanceof String){
+                                arguments[0] = e(arguments[0])
+                            }
+                            else if("object" == typeof arguments[0]){
+                                Object.keys(arguments[0]).forEach(t => {
+                                    if("load" === t || 0 === t.indexOf("load.")){
+                                        delete Object.assign(arguments[0], {[e(t)]: arguments[0][t]})[t]
+                                    }
+                                })
+                            }
                         }
-                        return t.apply(this, arguments), this
-                    }, e.allJQueries.push(n)
+                        t.apply(this, arguments)
+                        return this
+                    }
+                    e.allJQueries.push(n)
                 }
                 t = n
             }
@@ -304,7 +314,7 @@ class LaStudioPageSpeedClass {
         ps_instance.user_events_add(ps_instance)
         if(LaStudioPageSpeedConfigs.detected){
             if(ps_instance.is_pagespeed()){
-                ps_instance.add_html_class('isPageSpeed');
+                ps_instance.add_html_class('isPageSpeed', 'lasf--is-ps');
                 setTimeout(function (e){
                     if(!document.documentElement.classList.contains('lasf_ps-start')){
                         e.triggerListener()
@@ -328,5 +338,5 @@ class LaStudioPageSpeedClass {
 LaStudioPageSpeedClass.runoptimize();
 
 window.addEventListener('LaStudioPageSpeed:Loaded', () => {
-    console.log('finished!');
+    console.log('LaStudioPageSpeed:Loaded: finished!');
 })
