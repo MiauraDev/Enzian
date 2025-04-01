@@ -48,5 +48,5 @@ git clone https://github.com/MiauraDev/Enzian.git
 
 ## 🖼️ Vista | Preview
 
-![Tienda de Cosméticos](./Inicio.png)
-![Tienda de Cosméticos](./Tienda.png)
+![Tienda de Cosméticos](./Preview1.png)
+![Tienda de Cosméticos](./Preview2.png)
